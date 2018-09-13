@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block body %}
+    <div id="container">
+      <div id="pagetitle">
+        <h1>通信教育部FD</h1>
+      </div>
+      <div class="section">
+       <h2>リフレクションペーパーの<span class="lightcyan">ダウンロード</span></h2>
+       <div class="content">
+          <a href="/static/H29RefPaper.xls">リフレクションペーパーのダウンロード</a>
+        </div>
+       </div>
+
+       <div class="section">
+       <h2>リフレクションペーパーの<span class="cyan">アップロード</span></h2>
+       <form class="content" method=post enctype=multipart/form-data action="">
+        <p>整理番号を指定してください。</p>
+        <input type="text" name="cd" size="12" maxlength="6" value="{{ request.form.cd }}">
+        <p>アップロードするファイルを選択し、[Upload]をクリックしてください。</p>
+        <input type="file" name="file">
+        <input type="submit" value="Upload">
+       </form>
+       {% if error %}
+         <p class=error><strong>Error:</strong> {{ error }} </p>
+       {% endif %}
+       {% if msg %}
+         <p class=flash><strong>{{ msg }}</strong> </p>
+       {% endif %}
+      </div>
+    </div>
+{% endblock %}

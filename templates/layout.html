@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<title>tsushin FD</title>
+<link rel="stylesheet" type="text/css" href="/static/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+{% block body %}{% endblock %}
+<p class=footer>{{ nowts.strftime('%Y-%m-%d') }} 近畿大学通信教育部</p>
+</body>
+</html>
