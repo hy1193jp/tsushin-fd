@@ -4,18 +4,25 @@ from flask import Flask, flash, render_template, request, redirect, Response, ur
 from google.appengine.ext import ndb
 from google.appengine.api import app_identity, mail
 import cloudstorage as gcs
+# exec. in local env. create service account -> set environment variable  see https://cloud.google.com/docs/authentication/getting-started
+# export GOOGLE_APPLICATION_CREDENTIALS=/home/ymd/serviceAccount.json
 import datetime
 import os, logging
 # ex. logging.info(p.kamoku)
 
-bucket_name = 'tsushin-fd.appspot.com'
-
 app = Flask(__name__)
+
+class EnqueteInfo(ndb.Model):
+    year = ndb.StringProperty()
 
 class Paper(ndb.Model):
     kamoku = ndb.StringProperty()
     ufilename = ndb.StringProperty()
     udate = ndb.DateTimeProperty(auto_now=True)
+
+bucket_name = 'tsushin-fd.appspot.com'
+
+enquete_year = EnqueteInfo.query().get().year
 
 @app.route('/', methods = ['GET', 'POST'])
 def main():
@@ -37,7 +44,7 @@ def main():
         write_retry_params = gcs.RetryParams(backoff_factor=1.1)
         f = request.form['cd'] + '_' +  \
                 datetime.datetime.now().strftime('%Y%m%d') + os.path.splitext(uf.filename)[1]
-        gcs_file = gcs.open('/' + bucket_name + '/uploaded/' + f,
+        gcs_file = gcs.open('/' + bucket_name + '/' + enquete_year + '/' + f,
                       'w', content_type = 'application/msexcel',
                        retry_params = write_retry_params)
         gcs_file.write(uf.read())
@@ -51,8 +58,7 @@ def main():
         #return redirect(url_for('submitted_form'))
         return render_template('main.html',
             msg = request.form['cd'] + ep.kamoku + '---' + uf.filename + u'はアップロードされました')
-    return render_template('main.html')
-
+    return render_template('main.html', enqueteYear = enquete_year)
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -62,6 +68,12 @@ def page_not_found(e):
 @app.route('/mng', methods=['GET', 'POST'])
 def mng():
     if request.method == 'POST':
+        # set enquete year
+        if request.form['year']:
+            ei = EnqueteInfo.query().get() if EnqueteInfo.query().get() else EnqueteInfo()
+            ei.year = request.form['year']
+            ei.put()
+        # import / export enquete info. CSV
         file = request.files['file']
         if file and request.form['pw'] == 'import':
             import csv
@@ -74,17 +86,18 @@ def mng():
     return '''
     <!doctype html>
     <title>mng</title>
-    <form action="" method=post enctype=multipart/form-data>
-      <p>enquete info.<input type=file name=file>
-         <input type="password" size=8 name=pw>
-         <input type=submit value=Submit></p>
+    <form action="" method="post" enctype="multipart/form-data">
+      <p>Nendo(YYYY): <input type="text" name="year" size="4"></p>
+      <p>CSV: <input type="file" name="file">
+         <input type="password" name="pw" size="8">
+         <input type="submit" value="Submit"></p>
     </form>
     '''
 
 def exportCSV():
     write_retry_params = gcs.RetryParams(backoff_factor=1.1)
     f = 'Paper{:%Y%m%d}.csv'.format(datetime.datetime.now())
-    gcs_file = gcs.open(bucket_name + '/wk/' + f,
+    gcs_file = gcs.open('/' + bucket_name + '/wk/' + f,
             'w', content_type='text/csv',
             retry_params=write_retry_params)
     c = 0
