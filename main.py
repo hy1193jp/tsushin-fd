@@ -22,7 +22,7 @@ class Paper(ndb.Model):
 
 bucket_name = 'tsushin-fd.appspot.com'
 
-enquete_year = EnqueteInfo.query().get().year
+enquete_year = EnqueteInfo.query().get().year if EnqueteInfo.query().get() else 0
 
 @app.route('/', methods = ['GET', 'POST'])
 def main():
