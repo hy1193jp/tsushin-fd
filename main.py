@@ -51,10 +51,10 @@ def main():
         gcs_file.close()
         ep.ufilename = uf.filename
         ep.put()
-        mail.send_mail(sender = 'ymd@mbd.ocn.ne.jp',
-                   to = "admin <hiroaki.yamada@itp.kindai.ac.jp>",
-                   subject = "tsushin-fd uploaded",
-                   body = 'uploaded {:s} at {:s}'.format(ep.kamoku.encode('utf-8'), f))
+        # mail.send_mail(sender = 'ymd@mbd.ocn.ne.jp',
+        #           to = "admin <hiroaki.yamada@itp.kindai.ac.jp>",
+        #          subject = "tsushin-fd uploaded",
+        #          body = 'uploaded {:s} at {:s}'.format(ep.kamoku.encode('utf-8'), f))
         #return redirect(url_for('submitted_form'))
         return render_template('main.html',
             msg = request.form['cd'] + ep.kamoku + '---' + uf.filename + u'はアップロードされました')
